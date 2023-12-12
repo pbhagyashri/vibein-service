@@ -26,11 +26,11 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], Post.prototype, "text", void 0);
+], Post.prototype, "content", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', default: 0 }),
     __metadata("design:type", Number)
-], Post.prototype, "points", void 0);
+], Post.prototype, "likes", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)

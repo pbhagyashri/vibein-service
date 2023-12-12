@@ -1,7 +1,6 @@
 import { Router, Response } from 'express';
 import { TypedRequestBody } from '../types';
 import { AuthController } from '../controllers/userController';
-// import { User } from '../entities';
 
 const authRouter = Router();
 
@@ -38,29 +37,17 @@ const authRouter = Router();
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                id:
- *                  type: number
- *                email:
- *                  type: string
- *                username:
- *                  type: string
- *                createdAt:
- *                  type: string
- *                updatedAt:
- *                  type: string
+ *              $ref: '#/components/schemas/User'
  *      '400':
  *        description: Invalid status value
  */
-
 authRouter.post(
 	'/register',
 	async (req: TypedRequestBody<{ username: string; password: string; email: string }>, res: Response) => {
 		const { email, username, password } = req.body;
 		const controller = new AuthController();
 		try {
-			const user = await controller.register({ email, username, password });
+			const user = await controller.register({ email, username, password }, res);
 			return res.json(user);
 		} catch (error) {
 			return res.status(400).json({ error: error.message });
@@ -97,37 +84,21 @@ authRouter.post(
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                id:
- *                  type: number
- *                email:
- *                  type: string
- *                username:
- *                  type: string
- *                createdAt:
- *                  type: string
- *                updatedAt:
- *                  type: string
+ *              $ref: '#/components/schemas/User'
  *      '400':
  *        description: Invalid status value
  */
 authRouter.post('/login', async (req: TypedRequestBody<{ email: string; password: string }>, res: Response) => {
 	const { email, password } = req.body;
-
+	console.log({ email, password });
 	const controller = new AuthController();
 	try {
-		const user = await controller.login({ email, password });
-		return res.json(user);
+		const accessToken = await controller.login({ email, password }, res);
+
+		return res.json(accessToken);
 	} catch (error) {
 		return res.status(400).json({ error: error.message });
 	}
 });
-
-// authRouter.get('/users', async (_, resp: Response) => {
-// 	const users = resp.json(await User.find({}));
-// 	console.log({ users });
-// 	return users;
-// });
 
 export default authRouter;

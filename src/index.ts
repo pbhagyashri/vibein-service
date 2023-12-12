@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import { Post, User } from './entities';
 import router from './routes/index';
 import { getSwaggerSpec } from './utils/swagger';
+import 'dotenv/config';
 
 export const AppDataSource = new DataSource({
 	type: 'postgres',

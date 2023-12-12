@@ -11,6 +11,7 @@ const typeorm_1 = require("typeorm");
 const entities_1 = require("./entities");
 const index_1 = __importDefault(require("./routes/index"));
 const swagger_1 = require("./utils/swagger");
+require("dotenv/config");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
     host: 'localhost',

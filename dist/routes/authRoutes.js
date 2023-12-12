@@ -7,7 +7,7 @@ authRouter.post('/register', async (req, res) => {
     const { email, username, password } = req.body;
     const controller = new userController_1.AuthController();
     try {
-        const user = await controller.register({ email, username, password });
+        const user = await controller.register({ email, username, password }, res);
         return res.json(user);
     }
     catch (error) {
@@ -16,10 +16,11 @@ authRouter.post('/register', async (req, res) => {
 });
 authRouter.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    console.log({ email, password });
     const controller = new userController_1.AuthController();
     try {
-        const user = await controller.login({ email, password });
-        return res.json(user);
+        const accessToken = await controller.login({ email, password }, res);
+        return res.json(accessToken);
     }
     catch (error) {
         return res.status(400).json({ error: error.message });

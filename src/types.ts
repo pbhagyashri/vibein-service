@@ -1,7 +1,8 @@
 export type UserType = {
+	id: number;
 	username: string;
-	password: string;
 	email: string;
+	posts?: PostType[];
 	createdAt?: Date;
 	updatedAt?: Date;
 };
@@ -15,6 +16,21 @@ export type RegisterUserRequestParams = {
 export type LoginUserRequestParams = {
 	email: string;
 	password: string;
+};
+
+export type PostType = {
+	id: number;
+	title: string;
+	content: string;
+	likes: number;
+	creatorId: number;
+	creator: UserType;
+	createdAt?: Date;
+	updatedAt?: Date;
+};
+
+export type GetPostsResponse = {
+	posts: PostType[];
 };
 
 export interface TypedRequestBody<T> extends Express.Request {

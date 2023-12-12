@@ -12,7 +12,7 @@ const options = {
 		host: 'localhost:4000',
 		basePath: '/',
 	},
-	apis: ['src/routes/authRoutes.ts'], // path to the API docs
+	apis: ['src/routes/*.ts', 'src/controllers/*.ts'], // path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(options);

@@ -16,7 +16,7 @@ const options = {
         host: 'localhost:4000',
         basePath: '/',
     },
-    apis: ['src/routes/authRoutes.ts'],
+    apis: ['src/routes/*.ts', 'src/controllers/*.ts'],
 };
 const swaggerSpec = (0, swagger_jsdoc_1.default)(options);
 function getSwaggerSpec(app) {
