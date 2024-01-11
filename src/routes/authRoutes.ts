@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { TypedRequestBody } from '../types';
-import { AuthController } from '../controllers/userController';
+import { AuthController } from '../controllers/authController';
 
 const authRouter = Router();
 
@@ -9,26 +9,27 @@ const authRouter = Router();
  * /register:
  *   post:
  *     tags:
- *     - User
+ *     - Identity
  *     description: Register a new user
  *     requestBody:
- *      description: add a new user to the database
+ *      required: true
+ *      description: Register a new user
  *      content:
  *        application/json:
  *          schema:
  *           type: object
  *           required:
  *             - email
- *             - username
  *             - password
+ *             - username
  *           properties:
  *             email:
  *               type: string
  *               default: ganesh@test.com
- *             username:
+ *             password:
  *               type: string
  *               default: ganesh
- *             password:
+ *             username:
  *               type: string
  *               default: ganesh
  *     responses:
@@ -45,6 +46,8 @@ authRouter.post(
 	'/register',
 	async (req: TypedRequestBody<{ username: string; password: string; email: string }>, res: Response) => {
 		const { email, username, password } = req.body;
+		console.log({ email, username, password });
+
 		const controller = new AuthController();
 		try {
 			const user = await controller.register({ email, username, password }, res);
@@ -60,9 +63,10 @@ authRouter.post(
  * /login:
  *   post:
  *     tags:
- *     - User
+ *     - Identity
  *     description: Authenticate an existing user
  *     requestBody:
+ *      required: true
  *      description: Authenticate an existing user
  *      content:
  *        application/json:
@@ -70,7 +74,7 @@ authRouter.post(
  *           type: object
  *           required:
  *             - email
- *             - username
+ *             - password
  *           properties:
  *             email:
  *               type: string
@@ -90,11 +94,65 @@ authRouter.post(
  */
 authRouter.post('/login', async (req: TypedRequestBody<{ email: string; password: string }>, res: Response) => {
 	const { email, password } = req.body;
-	console.log({ email, password });
+
 	const controller = new AuthController();
 	try {
 		const accessToken = await controller.login({ email, password }, res);
 
+		return res.json(accessToken);
+	} catch (error) {
+		return res.status(400).json({ error: error.message });
+	}
+});
+
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     tags:
+ *     - Identity
+ *     description: Logout an existing user
+ *     requestBody:
+ *      description: Logout an existing user
+ *      content:
+ *        application/json:
+ *          schema:
+ *           type: object
+ *           required:
+ *             - email
+ *           properties:
+ *             email:
+ *               type: string
+ *               default: ganesh@test.com
+ *     responses:
+ *      '200':
+ *        description: A successful response
+ *        content:
+ *          text/plain:
+ *            schema:
+ *              type: string
+ *              example: 'user logged out successfully'
+ *      '400':
+ *        description: Invalid status value
+ */
+authRouter.post('/logout', async (req: TypedRequestBody<{ email: string }>, res: Response) => {
+	const { email } = req.body;
+
+	const controller = new AuthController();
+	try {
+		await controller.logout(email, res);
+
+		return res.json({ message: 'User logged out successfully' });
+	} catch (error) {
+		return res.status(400).json({ error: error.message });
+	}
+});
+
+authRouter.get('/refresh-token', async (req, res) => {
+	const controller = new AuthController();
+	try {
+		const accessToken = await controller.refreshToken(req, res);
+		console.log({ accessToken });
 		return res.json(accessToken);
 	} catch (error) {
 		return res.status(400).json({ error: error.message });

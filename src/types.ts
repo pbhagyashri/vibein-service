@@ -1,8 +1,11 @@
+import { Request } from 'express';
+
 export type UserType = {
-	id: number;
+	id: string;
 	username: string;
 	email: string;
-	posts?: PostType[];
+	refereshToken?: string;
+	accesstoken?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
 };
@@ -18,19 +21,31 @@ export type LoginUserRequestParams = {
 	password: string;
 };
 
+export type PostAuthor = {
+	id: string;
+	username: string;
+	email: string;
+};
+
 export type PostType = {
-	id: number;
+	id: string;
 	title: string;
 	content: string;
 	likes: number;
-	creatorId: number;
-	creator: UserType;
+	authorId: string;
+	user?: PostAuthor;
 	createdAt?: Date;
 	updatedAt?: Date;
 };
 
 export type GetPostsResponse = {
 	posts: PostType[];
+};
+
+export type CreatePostRequestParams = {
+	title: string;
+	content: string;
+	authorId: string;
 };
 
 export interface TypedRequestBody<T> extends Express.Request {
@@ -42,3 +57,12 @@ export type ResponseType<T> = {
 	record?: T;
 	status: number;
 };
+
+export interface RequestWithUser extends Request {
+	user: UserType;
+	userId: string;
+}
+
+export enum ErrorCodes {
+	INVALID_OR_EXPIRED_REFRESH_TOKEN = 'INVALID_OR_EXPIRED_REFRESH_TOKEN',
+}

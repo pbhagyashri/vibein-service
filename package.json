@@ -7,7 +7,7 @@
 		"build": "tsc",
 		"start": "nodemon dist/index.js",
 		"watch": "tsc -w",
-		"dev": "concurrently \"yarn watch\" \"yarn start\""
+		"dev": "concurrently  \"yarn watch\" \"yarn start\""
 	},
 	"author": "",
 	"license": "ISC",

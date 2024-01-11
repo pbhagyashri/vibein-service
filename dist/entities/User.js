@@ -16,8 +16,8 @@ let User = class User extends typeorm_1.BaseEntity {
 };
 exports.User = User;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
 ], User.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ unique: true }),
@@ -36,7 +36,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "refreshToken", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => Post_1.Post, (post) => post.creator),
+    (0, typeorm_1.OneToMany)(() => Post_1.Post, (post) => post.user),
     __metadata("design:type", Array)
 ], User.prototype, "posts", void 0);
 __decorate([
@@ -48,6 +48,6 @@ __decorate([
     __metadata("design:type", Date)
 ], User.prototype, "updatedAt", void 0);
 exports.User = User = __decorate([
-    (0, typeorm_1.Entity)('user-entity')
+    (0, typeorm_1.Entity)('author')
 ], User);
 //# sourceMappingURL=User.js.map

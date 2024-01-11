@@ -16,8 +16,8 @@ let Post = class Post extends typeorm_1.BaseEntity {
 };
 exports.Post = Post;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
 ], Post.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
@@ -32,13 +32,14 @@ __decorate([
     __metadata("design:type", Number)
 ], Post.prototype, "likes", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
-], Post.prototype, "creatorId", void 0);
+    (0, typeorm_1.Column)({ type: 'int' }),
+    __metadata("design:type", String)
+], Post.prototype, "authorId", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => User_1.User, (user) => user.posts),
+    (0, typeorm_1.JoinColumn)({ name: 'authorId' }),
     __metadata("design:type", User_1.User)
-], Post.prototype, "creator", void 0);
+], Post.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

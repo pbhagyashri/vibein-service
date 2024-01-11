@@ -11,6 +11,13 @@ const options = {
 		},
 		host: 'localhost:4000',
 		basePath: '/',
+		Headers: {
+			Authorization: {
+				description: 'Bearer token',
+				required: true,
+				type: 'string',
+			},
+		},
 	},
 	apis: ['src/routes/*.ts', 'src/controllers/*.ts'], // path to the API docs
 };
