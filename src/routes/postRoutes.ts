@@ -70,22 +70,18 @@ const PostRouter = Router();
  *      '400':
  *        description: Could not get posts
  */
-PostRouter.get(
-	'/posts',
-	authenticateUser,
-	async (req: Request, res: Response): Promise<Response<ResponseType<PaginationResponse>>> => {
-		const { limit, cursor } = req.query;
-		const limitNumber = parseInt(limit?.toString() || '9');
-		const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
+PostRouter.get('/posts', async (req: Request, res: Response): Promise<Response<ResponseType<PaginationResponse>>> => {
+	const { limit, cursor } = req.query;
+	const limitNumber = parseInt(limit?.toString() || '9');
+	const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
 
-		const paginationController = new PaginationController(cursorObject, limitNumber);
-		const response = await paginationController.getPosts({ limit: limitNumber, cursor: cursorObject });
+	const paginationController = new PaginationController(cursorObject, limitNumber);
+	const response = await paginationController.getPosts({ limit: limitNumber, cursor: cursorObject });
 
-		return res.status(200).json(response);
-	},
-);
+	return res.status(200).json(response);
+});
 
-PostRouter.get('/posts/count', authenticateUser, async (_, res: Response) => {
+PostRouter.get('/posts/count', async (_, res: Response) => {
 	const postController = new PostController();
 	const response = await postController.getPostCount();
 	res.json(response);
@@ -116,41 +112,12 @@ PostRouter.get('/posts/count', authenticateUser, async (_, res: Response) => {
  *      '400':
  *        description: Could not get posts
  */
-PostRouter.get('/posts/:id', authenticateUser, async (req: Request, res: Response) => {
+PostRouter.get('/posts/:id', async (req: Request, res: Response) => {
 	const { id } = req.params;
 
 	const postController = new PostController();
 	const response = await postController.getPostById(id);
 	res.status(response.status).json(response);
-});
-
-/**
- * @swagger
- * /posts/{id}:
- *   delete:
- *     tags:
- *     - Post
- *     description: Delete post
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *     - in: path
- *       name: id
- *       schema:
- *         type: string
- *         required: true
- *     responses:
- *      '200':
- *        description: 'Post deleted successfully'
- *      '400':
- *        description: Could not get posts
- */
-PostRouter.delete('/posts/:id', authenticateUser, async (req: Request, res: Response) => {
-	const { id } = req.params;
-
-	const postController = new PostController();
-	const response = await postController.deletePost(id);
-	res.status(200).json(response);
 });
 
 /**
@@ -186,10 +153,10 @@ PostRouter.delete('/posts/:id', authenticateUser, async (req: Request, res: Resp
  */
 // add likes to a post
 PostRouter.patch('/posts', authenticateUser, async (req: Request, res: Response) => {
-	const { userId, postId } = req.body;
+	const { userId } = req.body;
 
 	const postController = new PostController();
-	const response = await postController.likePost(userId, postId);
+	const response = await postController.likePost(userId);
 	res.status(response.status).json(response);
 });
 

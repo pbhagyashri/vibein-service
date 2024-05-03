@@ -45,7 +45,6 @@ const main = async () => {
 
 	app.listen(4000, () => {
 		console.log('Listening on port http://localhost:4000');
-
 		getSwaggerSpec(app);
 	});
 };

@@ -2,7 +2,7 @@ import { NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 export const authorizeUser = (req: any, res: any, next: NextFunction) => {
-	const { id } = req.params;
+	const { authorId } = req.params;
 
 	const accessToken = req.headers.authorization.split(' ')[1];
 
@@ -16,8 +16,8 @@ export const authorizeUser = (req: any, res: any, next: NextFunction) => {
 		}
 
 		const { userId } = decoded;
-		const loggedInUserId = userId === id;
-
+		const loggedInUserId = userId === authorId;
+		console.log({ userId, authorId, loggedInUserId });
 		if (!loggedInUserId) {
 			return res.status(403).send('You are not authorized to perform this action');
 		}

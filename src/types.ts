@@ -38,6 +38,11 @@ export type PostType = {
 	updatedAt?: Date;
 };
 
+export type getUserPostByIdRequestParams = {
+	authorId: string;
+	postId: string;
+};
+
 export type GetPostsResponse = {
 	posts: PostType[];
 };

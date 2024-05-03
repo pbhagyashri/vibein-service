@@ -115,7 +115,7 @@ export class PaginationController {
 	 *           type: number
 	 *           default: 200
 	 */
-	async getPosts({ limit, cursor }: PaginationReqestParams): Promise<ResponseType<PaginationResponse>> {
+	async getPosts({ cursor }: PaginationReqestParams): Promise<ResponseType<PaginationResponse>> {
 		/*
 			Philosophy:
 			Why I did not set a default value for limit?

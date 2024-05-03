@@ -70,22 +70,10 @@ export class PostController {
 		return count;
 	}
 
-	async deletePost(id: string) {
-		try {
-			await Post.delete({ id });
-			return {
-				record: 'Post deleted',
-				status: 200,
-			};
-		} catch (error) {
-			throw new Error(error.message);
-		}
-	}
-
-	async likePost(userId: string, postId: string) {
+	async likePost(userId: string) {
 		try {
 			const likeRespository = AppDataSource.getRepository(Like);
-			await likeRespository.createQueryBuilder('like').insert().values({ userId, postId }).execute();
+			await likeRespository.createQueryBuilder('like').insert().values({ userId }).execute();
 
 			return {
 				record: 'Added like to post',
