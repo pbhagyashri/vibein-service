@@ -1,0 +1,1 @@
+export { PaginationController } from './PaginationController';

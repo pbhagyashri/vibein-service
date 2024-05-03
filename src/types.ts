@@ -31,7 +31,7 @@ export type PostType = {
 	id: string;
 	title: string;
 	content: string;
-	likes: number;
+	// likes: number;
 	authorId: string;
 	user?: PostAuthor;
 	createdAt?: Date;
@@ -48,7 +48,30 @@ export type CreatePostRequestParams = {
 	authorId: string;
 };
 
+export type Cursor = {
+	createdAt: Date;
+	id: string;
+};
+
+export type PaginationReqestParams = {
+	cursor?: Cursor;
+	limit?: number;
+};
+
+export type PaginationResponse = {
+	posts: PostType[];
+	hasNextPage: boolean;
+	hasPreviousPage: boolean;
+};
+
+export type UpdatePostRequestBody = {
+	authorId: string;
+	postId: string;
+	postParam: PostType;
+};
+
 export interface TypedRequestBody<T> extends Express.Request {
+	params: any;
 	body: T;
 }
 

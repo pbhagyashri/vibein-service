@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { TypedRequestBody } from '../types';
-import { AuthController } from '../controllers/authController';
+import { AuthController } from '../controllers/auth-controller';
 
 const authRouter = Router();
 
@@ -25,13 +25,13 @@ const authRouter = Router();
  *           properties:
  *             email:
  *               type: string
- *               default: ganesh@test.com
+ *               default: reva@test.com
  *             password:
  *               type: string
- *               default: ganesh
+ *               default: reva
  *             username:
  *               type: string
- *               default: ganesh
+ *               default: reva
  *     responses:
  *      '200':
  *        description: A successful response
@@ -46,7 +46,6 @@ authRouter.post(
 	'/register',
 	async (req: TypedRequestBody<{ username: string; password: string; email: string }>, res: Response) => {
 		const { email, username, password } = req.body;
-		console.log({ email, username, password });
 
 		const controller = new AuthController();
 		try {
@@ -78,10 +77,10 @@ authRouter.post(
  *           properties:
  *             email:
  *               type: string
- *               default: ganesh@test.com
+ *               default: reva@test.com
  *             password:
  *               type: string
- *               default: ganesh
+ *               default: reva
  *     responses:
  *      '200':
  *        description: A successful response
@@ -148,11 +147,28 @@ authRouter.post('/logout', async (req: TypedRequestBody<{ email: string }>, res:
 	}
 });
 
+/**
+ * @swagger
+ * /refresh-token:
+ *   get:
+ *     tags:
+ *     - Identity
+ *     description: Returns an access token upon successful validation of the refresh token
+ *     responses:
+ *      '200':
+ *        description: A successful response
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: string
+ *      '400':
+ *        description: Invalid status value
+ */
 authRouter.get('/refresh-token', async (req, res) => {
 	const controller = new AuthController();
 	try {
 		const accessToken = await controller.refreshToken(req, res);
-		console.log({ accessToken });
+
 		return res.json(accessToken);
 	} catch (error) {
 		return res.status(400).json({ error: error.message });

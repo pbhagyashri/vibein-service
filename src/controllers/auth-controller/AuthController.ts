@@ -1,6 +1,6 @@
 import { Response, Request } from 'express';
-import { User } from '../entities';
-import { ResponseType, RegisterUserRequestParams, UserType, LoginUserRequestParams, ErrorCodes } from '../types';
+import { User } from '../../entities';
+import { ResponseType, RegisterUserRequestParams, UserType, LoginUserRequestParams, ErrorCodes } from '../../types';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -127,14 +127,14 @@ export class AuthController {
 				userId: user.id,
 			},
 			process.env.ACCESS_TOKEN_SECRET as string,
-			{ expiresIn: 15000 },
+			{ expiresIn: '10m' },
 		);
 		const refreshToken = jwt.sign(
 			{
 				userId: user.id,
 			},
 			process.env.REFRESH_TOKEN_SECRET as string,
-			{ expiresIn: '1d' },
+			{ expiresIn: '5m' },
 		);
 
 		// update refreshToken in db
@@ -142,7 +142,12 @@ export class AuthController {
 		await user.save();
 
 		// set refreshToken in the cookie
-		res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 });
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			maxAge: 1000 * 60 * 5,
+			sameSite: 'none',
+			secure: true,
+		});
 
 		// only return accessToken
 		return {
@@ -188,6 +193,7 @@ export class AuthController {
 	async refreshToken(req: Request, res: Response) {
 		// refresh token endpoint is used to generate a new access token when the old one expires
 		// we should receive a refreshToken in the cookie
+		console.log('req.headers', req.headers);
 		const refreshToken = req.headers.cookie?.split('=')[1];
 		if (!refreshToken) {
 			throw new Error('No refreshToken found');

@@ -6,9 +6,12 @@ import {
 	UpdateDateColumn,
 	BaseEntity,
 	ManyToOne,
-	JoinColumn,
+	OneToMany,
+	ManyToMany,
+	JoinTable,
 } from 'typeorm';
-import { User } from './User';
+import { User, Like } from './';
+import { join } from 'path';
 
 @Entity()
 export class Post extends BaseEntity {
@@ -21,17 +24,17 @@ export class Post extends BaseEntity {
 	@Column()
 	content!: string;
 
-	@Column({ type: 'int', default: 0 })
-	likes!: number;
-
 	@Column({ type: 'int' })
 	authorId!: string;
 
-	@ManyToOne(() => User, (user) => user.posts)
-	@JoinColumn({ name: 'authorId' })
-	user: User;
+	@ManyToOne(() => User)
+	author: User;
 
-	@CreateDateColumn()
+	@ManyToMany(() => Like, (like) => like.posts)
+	@JoinTable()
+	likes: Like[];
+
+	@CreateDateColumn({ type: 'timestamptz' })
 	createdAt?: Date;
 
 	@UpdateDateColumn()

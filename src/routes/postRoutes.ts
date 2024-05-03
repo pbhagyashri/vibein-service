@@ -1,10 +1,10 @@
 import { Router, Response, Request } from 'express';
-import { PostController } from '../controllers/postController';
-import { authenticateUser } from '../middlewares/authenticateUser';
-import { TypedRequestBody } from '@/types';
+import { PaginationController } from '../controllers/paination-controller';
+import { authenticateUser } from '../middlewares';
+import { Cursor, ResponseType, PaginationResponse } from '../types';
+import { PostController } from '../controllers/post-controller/PostController';
 
 const PostRouter = Router();
-
 /**
  * @swagger
  * /posts?limit={limit}:
@@ -12,12 +12,14 @@ const PostRouter = Router();
  *     tags:
  *     - Post
  *     description: Get all posts
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *     - name: limit
  *       in: query
- *       description: 'description regarding limit'
+ *       description: 'limits the number of posts returned'
  *       required: true
- *       type: string
+ *       type: number
  *     responses:
  *      '200':
  *        description: A successful response
@@ -30,22 +32,34 @@ const PostRouter = Router();
  */
 /**
  * @swagger
- * /posts?cursor={cursor}&limit={limit}:
+ * /posts?cursor[id]={id}%[createdAt]={createdAt}&limit={limit}:
  *   get:
  *     tags:
  *     - Post
  *     description: Get all posts
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *     - name: limit
  *       in: query
- *       description: 'description regarding limit'
+ *       description: 'limits the number of posts returned'
  *       required: true
- *       type: string
+ *       schema:
+ *         type: number
+ *         format: int32
+ *         default: 4
  *     - name: cursor
  *       in: query
- *       description: 'description regarding limit'
- *       required: false
- *       type: string
+ *       schema:
+ *         type: object
+ *         properties:
+ *           id:
+ *             type: string
+ *             default: 55163961-1d19-46bb-9347-993ba9740a69
+ *           createdAt:
+ *             type: string
+ *             format: date-time
+ *             default: 2024-02-23T18:38:45.472Z
  *     responses:
  *      '200':
  *        description: A successful response
@@ -56,65 +70,26 @@ const PostRouter = Router();
  *      '400':
  *        description: Could not get posts
  */
-PostRouter.get('/posts', async (req: Request, res: Response) => {
-	const { limit, cursor } = req.query;
-	console.log({ limit, cursor });
-	const postController = new PostController();
-	const response = await postController.getPosts(parseInt(limit as string), cursor as string);
-
-	res.status(response.status).json(response);
-});
-
-/**
- * @swagger
- * /posts:
- *   post:
- *     tags:
- *     - Post
- *     description: Create a new post
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - title
- *               - content
- *               - authorId
- *             properties:
- *               title:
- *                 type: string
- *                 default: New Post
- *               content:
- *                 type: string
- *                 default: This is a new post
- *               authorId:
- *                 type: string
- *                 default: 79856e58-eaa8-4ee4-86dd-d78275e78b6e
- *     responses:
- *      '200':
- *        description: A successful response
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/Post'
- *      '400':
- *        description: Could not get posts
- */
-PostRouter.post(
+PostRouter.get(
 	'/posts',
 	authenticateUser,
-	async (req: TypedRequestBody<{ title: string; content: string; authorId: string }>, res: Response) => {
-		const { title, content, authorId } = req.body;
-		console.log('req.body', { req });
-		const postController = new PostController();
-		const response = await postController.createPost({ title, content, authorId });
-		res.status(response.status).json(response);
+	async (req: Request, res: Response): Promise<Response<ResponseType<PaginationResponse>>> => {
+		const { limit, cursor } = req.query;
+		const limitNumber = parseInt(limit?.toString() || '9');
+		const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
+
+		const paginationController = new PaginationController(cursorObject, limitNumber);
+		const response = await paginationController.getPosts({ limit: limitNumber, cursor: cursorObject });
+
+		return res.status(200).json(response);
 	},
 );
+
+PostRouter.get('/posts/count', authenticateUser, async (_, res: Response) => {
+	const postController = new PostController();
+	const response = await postController.getPostCount();
+	res.json(response);
+});
 
 /**
  * @swagger
@@ -123,6 +98,8 @@ PostRouter.post(
  *     tags:
  *     - Post
  *     description: Get a post by id
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *     - in: path
  *       name: id
@@ -139,7 +116,7 @@ PostRouter.post(
  *      '400':
  *        description: Could not get posts
  */
-PostRouter.get('/posts/:id', async (req: Request, res: Response) => {
+PostRouter.get('/posts/:id', authenticateUser, async (req: Request, res: Response) => {
 	const { id } = req.params;
 
 	const postController = new PostController();
@@ -154,6 +131,8 @@ PostRouter.get('/posts/:id', async (req: Request, res: Response) => {
  *     tags:
  *     - Post
  *     description: Delete post
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *     - in: path
  *       name: id
@@ -166,12 +145,52 @@ PostRouter.get('/posts/:id', async (req: Request, res: Response) => {
  *      '400':
  *        description: Could not get posts
  */
-PostRouter.delete('/posts/:id', async (req: Request, res: Response) => {
+PostRouter.delete('/posts/:id', authenticateUser, async (req: Request, res: Response) => {
 	const { id } = req.params;
 
 	const postController = new PostController();
 	const response = await postController.deletePost(id);
 	res.status(200).json(response);
+});
+
+/**
+ * @swagger
+ * /posts:
+ *   patch:
+ *     tags:
+ *     - Post
+ *     description: Add likes to a post
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - postId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 default: b8e61310-69d6-4c7a-a6de-003f725463dc
+ *               postId:
+ *                 type: string
+ *                 default: 60255cf6-43e3-4734-86c7-a4f8ddb018fb
+ *     responses:
+ *      '200':
+ *        description: 'Post liked successfully'
+ *      '400':
+ *        description: Could not get posts
+ */
+// add likes to a post
+PostRouter.patch('/posts', authenticateUser, async (req: Request, res: Response) => {
+	const { userId, postId } = req.body;
+
+	const postController = new PostController();
+	const response = await postController.likePost(userId, postId);
+	res.status(response.status).json(response);
 });
 
 export default PostRouter;

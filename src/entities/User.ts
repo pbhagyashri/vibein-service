@@ -7,7 +7,7 @@ import {
 	BaseEntity,
 	OneToMany,
 } from 'typeorm';
-import { Post } from './Post';
+import { Like, Post } from './';
 
 @Entity('author')
 export class User extends BaseEntity {
@@ -26,8 +26,11 @@ export class User extends BaseEntity {
 	@Column()
 	refreshToken!: string;
 
-	@OneToMany(() => Post, (post) => post.user)
+	@OneToMany(() => Post, (post) => post.author)
 	posts: Post[];
+
+	@OneToMany(() => Like, (like) => like.user)
+	likes: Like[];
 
 	@CreateDateColumn()
 	createdAt: Date;
