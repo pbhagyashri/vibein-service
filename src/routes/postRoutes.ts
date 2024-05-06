@@ -72,11 +72,12 @@ const PostRouter = Router();
  */
 PostRouter.get('/posts', async (req: Request, res: Response): Promise<Response<ResponseType<PaginationResponse>>> => {
 	const { limit, cursor } = req.query;
+
 	const limitNumber = parseInt(limit?.toString() || '9');
 	const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
 
 	const paginationController = new PaginationController(cursorObject, limitNumber);
-	const response = await paginationController.getPosts({ limit: limitNumber, cursor: cursorObject });
+	const response = await paginationController.getPosts({ cursor: cursorObject });
 
 	return res.status(200).json(response);
 });

@@ -3,7 +3,8 @@ import { authenticateUser } from '../middlewares/authenticateUser';
 import { AuthorController } from '../controllers/author-controller';
 import { Router } from 'express';
 import { authorizeUser } from '../middlewares/authorizeUser';
-import { TypedRequestBody } from '@/types';
+import { Cursor, TypedRequestBody } from '@/types';
+import { PaginationController } from '../controllers/paination-controller';
 
 const AuthorRouter = Router();
 
@@ -34,11 +35,18 @@ const AuthorRouter = Router();
  *        description: Could not get users
  */
 AuthorRouter.get('/authors/:authorId/posts', authenticateUser, authorizeUser, async (req: Request, res: Response) => {
+	const { limit, cursor } = req.query;
 	const { authorId } = req.params;
-	const authorController = new AuthorController();
 
-	const response = await authorController.geAuthorPosts(authorId);
-	return res.status(response?.status || 0).json(response);
+	const limitNumber = parseInt(limit?.toString() || '9');
+	const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
+
+	const paginationController = new PaginationController(cursorObject, limitNumber);
+	const response = await paginationController.getPosts({ cursor: cursorObject, authorId });
+	// const authorController = new AuthorController();
+	// const response = await authorController.geAuthorPosts(authorId);
+
+	return res.status(response.status).json(response.record);
 });
 
 /**
@@ -89,7 +97,7 @@ AuthorRouter.get(
 		const authorController = new AuthorController();
 		const response = await authorController.getUserPostById({ authorId, postId });
 
-		return res.json(response);
+		return res.json(response.record);
 	},
 );
 
@@ -272,9 +280,14 @@ AuthorRouter.delete(
 	async (req: Request, res: Response) => {
 		const { authorId, postId } = req.params;
 
-		const authorController = new AuthorController();
-		const response = await authorController.deletePost(authorId, postId);
-		res.status(200).json(response);
+		try {
+			const authorController = new AuthorController();
+			const response = await authorController.deletePost(authorId, postId);
+
+			res.status(200).json(response);
+		} catch (error) {
+			res.status(400).json({ error: error.message });
+		}
 	},
 );
 

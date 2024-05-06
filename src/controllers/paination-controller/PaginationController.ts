@@ -17,11 +17,20 @@ export class PaginationController {
 	private postRespository = AppDataSource?.getRepository(Post);
 	private qb = this.postRespository.createQueryBuilder('post');
 
-	async hasPreviousPage(): Promise<boolean> {
+	async hasPreviousPage(authorId?: string): Promise<boolean> {
 		const { createdAt, id } = this.cursor;
 
+		if (authorId) {
+			return await this.qb
+				.where('post.authorId = :authorId', { authorId })
+				.andWhere('post.id != :id', { id }) // Exclude the first post
+				.orderBy('post.createdAt', 'ASC')
+				.limit(this.maxLimit)
+				.getExists();
+		}
+
 		return await this.qb
-			.leftJoinAndSelect('post.user', 'user1')
+			.leftJoinAndSelect('post.author', 'author1')
 			.where('post.createdAt > :createdAt', { createdAt })
 			.andWhere('post.id != :id', { id }) // Exclude the first post
 			.orderBy('post.createdAt', 'ASC')
@@ -29,7 +38,12 @@ export class PaginationController {
 			.getExists();
 	}
 
-	async getFirstPage(): Promise<PostType[]> {
+	async getFirstPage(authorId?: string): Promise<PostType[]> {
+		// return author's first post
+		if (authorId) {
+			return await this.qb.where('post.authorId = :authorId', { authorId }).limit(this.maxLimit).getMany();
+		}
+
 		const posts = await this.qb.leftJoinAndSelect('post.author', 'author2').limit(this.maxLimit).getMany();
 		// set posts in cache
 		// redis.set(`first-posts-${this.limit}`, JSON.stringify(posts), 'PX', 600000);
@@ -51,8 +65,18 @@ export class PaginationController {
 	// 	return JSON.parse(cachedPosts).slice(0, this.maxLimit);
 	// }
 
-	async getPage(): Promise<PostType[]> {
+	async getPage(authorId?: string): Promise<PostType[]> {
 		const { createdAt, id } = this.cursor;
+
+		if (authorId) {
+			return await this.qb
+				.where('post.authorId = :authorId', { authorId })
+				.andWhere('post.createdAt <= :createdAt', { createdAt })
+				.andWhere('post.id != :id', { id }) // Exclude the post with the cursor
+				.orderBy('post.createdAt', 'DESC')
+				.limit(this.maxLimit)
+				.getMany();
+		}
 
 		const posts = await this.qb
 			.leftJoinAndSelect('post.author', 'author2')
@@ -63,7 +87,6 @@ export class PaginationController {
 			.getMany();
 
 		// redis.set(`posts:${id}-${this.limit}`, JSON.stringify(posts), 'PX', 600000);
-
 		return posts;
 	}
 
@@ -115,7 +138,7 @@ export class PaginationController {
 	 *           type: number
 	 *           default: 200
 	 */
-	async getPosts({ cursor }: PaginationReqestParams): Promise<ResponseType<PaginationResponse>> {
+	async getPosts({ cursor, authorId }: PaginationReqestParams): Promise<ResponseType<PaginationResponse>> {
 		/*
 			Philosophy:
 			Why I did not set a default value for limit?
@@ -144,7 +167,7 @@ export class PaginationController {
 				// }
 
 				// get posts from database
-				const posts = await this.getFirstPage();
+				const posts = await this.getFirstPage(authorId);
 
 				return {
 					record: {
@@ -170,13 +193,13 @@ export class PaginationController {
 			// 	};
 			// }
 
-			const posts = await this.getPage();
+			const posts = await this.getPage(authorId);
 
 			return {
 				record: {
 					posts: posts.slice(0, this.limit),
 					hasNextPage: await this.hasNextPage(posts),
-					hasPreviousPage: await this.hasPreviousPage(),
+					hasPreviousPage: await this.hasPreviousPage(authorId),
 				},
 				status: 200,
 			};

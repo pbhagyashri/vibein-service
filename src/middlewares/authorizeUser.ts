@@ -18,6 +18,7 @@ export const authorizeUser = (req: any, res: any, next: NextFunction) => {
 		const { userId } = decoded;
 		const loggedInUserId = userId === authorId;
 		console.log({ userId, authorId, loggedInUserId });
+
 		if (!loggedInUserId) {
 			return res.status(403).send('You are not authorized to perform this action');
 		}

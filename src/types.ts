@@ -33,7 +33,7 @@ export type PostType = {
 	content: string;
 	// likes: number;
 	authorId: string;
-	user?: PostAuthor;
+	author?: PostAuthor;
 	createdAt?: Date;
 	updatedAt?: Date;
 };
@@ -61,6 +61,7 @@ export type Cursor = {
 export type PaginationReqestParams = {
 	cursor?: Cursor;
 	limit?: number;
+	authorId?: string;
 };
 
 export type PaginationResponse = {

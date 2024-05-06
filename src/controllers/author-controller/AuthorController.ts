@@ -60,10 +60,9 @@ export class AuthorController {
 		}
 
 		try {
-			const post = await this.userQueryBuilder
-				.where('user.id = :authorId', { authorId })
-				.leftJoinAndSelect('user.posts', 'post')
-				.where('post.authorId = :authorId', { authorId })
+			const post = await this.postQueryBuilder
+				.where('post.id = :postId', { postId })
+				.andWhere('post.authorId = :authorId', { authorId })
 				.getOne();
 
 			return {
@@ -129,7 +128,7 @@ export class AuthorController {
 				.insert()
 				.into(Post)
 				.values({ title, content, authorId })
-				.returning(['id', 'title', 'content'])
+				.returning(['id', 'title', 'content', 'authorId', 'createdAt', 'updatedAt'])
 				.execute();
 
 			return {
@@ -172,16 +171,20 @@ export class AuthorController {
 		}
 	}
 
-	async deletePost(authorId: string, postId: string): Promise<ResponseType<string>> {
+	async deletePost(authorId: string, postId: string) {
 		try {
-			await this.postQueryBuilder
+			const result = await this.postQueryBuilder
 				.delete()
 				.from(Post)
 				.where('id = :id', { id: postId })
 				.andWhere('authorId = :authorId', { authorId })
 				.execute();
+
+			if (!result || result.affected === 0) {
+				throw new Error('Could not delete post!!!!');
+			}
 			return {
-				record: 'Post deleted',
+				record: result,
 				status: 200,
 			};
 		} catch (error) {
