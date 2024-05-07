@@ -153,12 +153,12 @@ PostRouter.get('/posts/:id', async (req: Request, res: Response) => {
  *        description: Could not get posts
  */
 // add likes to a post
-PostRouter.patch('/posts', authenticateUser, async (req: Request, res: Response) => {
-	const { userId } = req.body;
+// PostRouter.patch('/posts', authenticateUser, async (req: Request, res: Response) => {
+// 	const { userId } = req.body;
 
-	const postController = new PostController();
-	const response = await postController.likePost(userId);
-	res.status(response.status).json(response);
-});
+// 	const postController = new PostController();
+// 	const response = await postController.likePost(userId);
+// 	res.status(response.status).json(response);
+// });
 
 export default PostRouter;

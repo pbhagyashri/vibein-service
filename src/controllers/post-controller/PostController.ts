@@ -82,20 +82,20 @@ export class PostController {
 		}
 	}
 
-	async likePost(userId: string, postId: string) {
-		try {
-			const likeRespository = AppDataSource.getRepository(Like);
-			await likeRespository.createQueryBuilder('like').insert().values({ userId, postId }).execute();
+	// async likePost(userId: string, postId: string) {
+	// 	try {
+	// 		const likeRespository = AppDataSource.getRepository(Like);
+	// 		await likeRespository.createQueryBuilder('like').insert().values({ userId, postId }).execute();
 
-			return {
-				record: 'Added like to post',
-				status: 200,
-			};
-		} catch (error) {
-			return {
-				error: error.message,
-				status: 400,
-			};
-		}
-	}
+	// 		return {
+	// 			record: 'Added like to post',
+	// 			status: 200,
+	// 		};
+	// 	} catch (error) {
+	// 		return {
+	// 			error: error.message,
+	// 			status: 400,
+	// 		};
+	// 	}
+	// }
 }
