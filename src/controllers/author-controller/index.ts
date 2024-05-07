@@ -1,0 +1,1 @@
+export { AuthorController } from './AuthorController';

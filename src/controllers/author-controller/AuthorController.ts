@@ -21,7 +21,7 @@ import { AppDataSource } from '../..';
  *           type: number
  *           default: 200
  */
-export class UserController {
+export class AuthorController {
 	async getUserPosts(id: string): Promise<ResponseType<PostType[]>> {
 		if (!id) {
 			throw new Error('Must be logged in to view posts');

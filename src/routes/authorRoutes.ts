@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { authenticateUser } from '../middlewares/authenticateUser';
-import { UserController } from '../controllers/user-controller';
+import { AuthorController } from '../controllers/author-controller';
 import { Router } from 'express';
 import { authorizeUser } from '../middlewares/authorizeUser';
 import { TypedRequestBody } from '@/types';
 
-const UserRouter = Router();
+const AuthorRouter = Router();
 
 /**
  * @swagger
@@ -33,17 +33,17 @@ const UserRouter = Router();
  *      '400':
  *        description: Could not get users
  */
-UserRouter.get('/users/:id/posts', authenticateUser, authorizeUser, async (req: any, res: Response) => {
+AuthorRouter.get('/users/:id/posts', authenticateUser, authorizeUser, async (req: any, res: Response) => {
 	const { id } = req.params;
 
-	const userController = new UserController();
+	const userController = new AuthorController();
 
 	const response = await userController.getUserPosts(id);
 	return res.status(response.status).json(response);
 });
 
-UserRouter.get('/users', async (_, res: Response) => {
-	const userController = new UserController();
+AuthorRouter.get('/users', async (_, res: Response) => {
+	const userController = new AuthorController();
 	const response = await userController.getUsers();
 
 	return res.status(response.status).json(response);
@@ -91,7 +91,7 @@ UserRouter.get('/users', async (_, res: Response) => {
  *      '400':
  *        description: Could not get posts
  */
-UserRouter.post(
+AuthorRouter.post(
 	'/users/:id/posts',
 	authenticateUser,
 	authorizeUser,
@@ -99,7 +99,7 @@ UserRouter.post(
 		const { id } = req.params;
 		const { title, content } = req.body;
 
-		const userController = new UserController();
+		const userController = new AuthorController();
 		const response = await userController.createPost({ title, content, authorId: id });
 
 		return res.status(response.status).json(response);
@@ -125,10 +125,10 @@ UserRouter.post(
  *      '400':
  *        description: Could not get users
  */
-UserRouter.get('/me', authenticateUser, async (req: any, res: Response) => {
+AuthorRouter.get('/me', authenticateUser, async (req: any, res: Response) => {
 	const token = req.headers.authorization?.split(' ')[1];
 
-	const userController = new UserController();
+	const userController = new AuthorController();
 	const response = await userController.me(token);
 
 	return res.status(response.status).json(response);
@@ -178,14 +178,14 @@ UserRouter.get('/me', authenticateUser, async (req: any, res: Response) => {
  *      '400':
  *        description: Could not get posts
  */
-UserRouter.patch('/users/:id/posts/:postId', authenticateUser, authorizeUser, async (req: any, res: Response) => {
+AuthorRouter.patch('/users/:id/posts/:postId', authenticateUser, authorizeUser, async (req: any, res: Response) => {
 	const { body } = req;
 	const { id, postId } = req.params;
 
-	const userController = new UserController();
+	const userController = new AuthorController();
 	const response = await userController.updatePost({ authorId: id, postId, postParam: body });
 
 	return res.status(response.status).json(response);
 });
 
-export default UserRouter;
+export default AuthorRouter;
