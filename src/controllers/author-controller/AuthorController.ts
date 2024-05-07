@@ -22,13 +22,13 @@ import { AppDataSource } from '../..';
  *           default: 200
  */
 export class AuthorController {
-	async getUserPosts(id: string): Promise<ResponseType<PostType[]>> {
-		if (!id) {
+	async getUserPosts(authorId: string): Promise<ResponseType<PostType[]>> {
+		if (!authorId) {
 			throw new Error('Must be logged in to view posts');
 		}
 
 		try {
-			const posts = await Post.find({ where: { authorId: id } });
+			const posts = await Post.find({ where: { authorId } });
 
 			return {
 				record: posts,

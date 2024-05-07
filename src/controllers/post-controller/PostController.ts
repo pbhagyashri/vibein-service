@@ -1,7 +1,24 @@
+import { Cursor } from '@/types';
 import { AppDataSource } from '../..';
-import { Like, Post } from '../../entities';
+import { Post } from '../../entities';
+import { PaginationController } from '../paination-controller';
 
 export class PostController {
+	async getPosts(limit: number, cursor: Cursor) {
+		try {
+			const postRespository = AppDataSource?.getRepository(Post);
+			const fetchedPostQuery = postRespository.createQueryBuilder('post').leftJoinAndSelect('post.author', 'author');
+
+			const paginationController = new PaginationController(cursor, limit, fetchedPostQuery);
+
+			return await paginationController.getPosts({ cursor, limit });
+		} catch (error) {
+			return {
+				error: error.message,
+				status: 400,
+			};
+		}
+	}
 	/**
 	 * @swagger
 	 * components:

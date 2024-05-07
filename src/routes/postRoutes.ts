@@ -1,6 +1,4 @@
 import { Router, Response, Request } from 'express';
-import { PaginationController } from '../controllers/paination-controller';
-import { authenticateUser } from '../middlewares';
 import { Cursor, ResponseType, PaginationResponse } from '../types';
 import { PostController } from '../controllers/post-controller/PostController';
 
@@ -72,12 +70,11 @@ const PostRouter = Router();
  */
 PostRouter.get('/posts', async (req: Request, res: Response): Promise<Response<ResponseType<PaginationResponse>>> => {
 	const { limit, cursor } = req.query;
-
 	const limitNumber = parseInt(limit?.toString() || '9');
 	const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
 
-	const paginationController = new PaginationController(cursorObject, limitNumber);
-	const response = await paginationController.getPosts({ cursor: cursorObject });
+	const postController = new PostController();
+	const response = await postController.getPosts(limitNumber, cursorObject);
 
 	return res.status(200).json(response);
 });

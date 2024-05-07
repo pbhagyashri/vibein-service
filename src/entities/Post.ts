@@ -6,12 +6,10 @@ import {
 	UpdateDateColumn,
 	BaseEntity,
 	ManyToOne,
-	OneToMany,
 	ManyToMany,
 	JoinTable,
 } from 'typeorm';
 import { User, Like } from './';
-import { join } from 'path';
 
 @Entity()
 export class Post extends BaseEntity {

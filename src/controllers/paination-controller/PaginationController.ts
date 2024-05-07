@@ -1,32 +1,27 @@
 import { PostType, ResponseType, PaginationResponse, PaginationReqestParams, Cursor } from '../../types';
 import { Post } from '../../entities';
 import { AppDataSource } from '../..';
+import { SelectQueryBuilder } from 'typeorm';
 // import { redis } from '../../lib';
 
 export class PaginationController {
 	cursor: Cursor;
 	limit: number;
 	maxLimit: number;
+	fetchPostQuery: SelectQueryBuilder<Post>;
 
-	constructor(cursor: Cursor, limit: number) {
+	constructor(cursor: Cursor, limit: number, fetchPostQuery: SelectQueryBuilder<Post>) {
 		this.cursor = cursor;
 		this.limit = limit;
 		this.maxLimit = this.limit + 1;
+		this.fetchPostQuery = fetchPostQuery;
 	}
 
 	private postRespository = AppDataSource?.getRepository(Post);
 	private qb = this.postRespository.createQueryBuilder('post');
 
 	async hasPreviousPage(): Promise<boolean> {
-		const { createdAt, id } = this.cursor;
-
-		return await this.qb
-			.leftJoinAndSelect('post.user', 'user1')
-			.where('post.createdAt > :createdAt', { createdAt })
-			.andWhere('post.id != :id', { id }) // Exclude the first post
-			.orderBy('post.createdAt', 'ASC')
-			.limit(1)
-			.getExists();
+		return await this.fetchPostQuery.orderBy('post.createdAt', 'ASC').limit(1).getExists();
 	}
 
 	async getFirstPage(): Promise<PostType[]> {
@@ -54,17 +49,20 @@ export class PaginationController {
 	async getPage(): Promise<PostType[]> {
 		const { createdAt, id } = this.cursor;
 
-		const posts = await this.qb
-			.leftJoinAndSelect('post.author', 'author2')
-			.where('post.createdAt <= :createdAt', { createdAt })
-			.andWhere('post.id != :id', { id }) // Exclude the post with the cursor
-			.orderBy('post.createdAt', 'DESC')
-			.limit(this.maxLimit)
-			.getMany();
+		try {
+			const posts = await this.fetchPostQuery
+				.where('post.createdAt <= :createdAt', { createdAt })
+				.andWhere('post.id != :id', { id }) // Exclude the post with the cursor
+				.orderBy('post.createdAt', 'DESC')
+				.limit(this.maxLimit)
+				.getMany();
 
-		// redis.set(`posts:${id}-${this.limit}`, JSON.stringify(posts), 'PX', 600000);
+			// redis.set(`posts:${id}-${this.limit}`, JSON.stringify(posts), 'PX', 600000);
 
-		return posts;
+			return posts;
+		} catch (error) {
+			throw new Error('Could not get posts');
+		}
 	}
 
 	/**
@@ -115,7 +113,7 @@ export class PaginationController {
 	 *           type: number
 	 *           default: 200
 	 */
-	async getPosts({ limit, cursor }: PaginationReqestParams): Promise<ResponseType<PaginationResponse>> {
+	async getPosts({ cursor }: PaginationReqestParams): Promise<ResponseType<PaginationResponse>> {
 		/*
 			Philosophy:
 			Why I did not set a default value for limit?

@@ -33,18 +33,18 @@ const AuthorRouter = Router();
  *      '400':
  *        description: Could not get users
  */
-AuthorRouter.get('/users/:id/posts', authenticateUser, authorizeUser, async (req: any, res: Response) => {
-	const { id } = req.params;
+AuthorRouter.get('/authors/:authorId/posts', authenticateUser, authorizeUser, async (req: any, res: Response) => {
+	const { authorId } = req.params;
 
-	const userController = new AuthorController();
+	const authorController = new AuthorController();
 
-	const response = await userController.getUserPosts(id);
+	const response = await authorController.getUserPosts(authorId);
 	return res.status(response.status).json(response);
 });
 
 AuthorRouter.get('/users', async (_, res: Response) => {
-	const userController = new AuthorController();
-	const response = await userController.getUsers();
+	const authorController = new AuthorController();
+	const response = await authorController.getUsers();
 
 	return res.status(response.status).json(response);
 });
@@ -99,8 +99,8 @@ AuthorRouter.post(
 		const { id } = req.params;
 		const { title, content } = req.body;
 
-		const userController = new AuthorController();
-		const response = await userController.createPost({ title, content, authorId: id });
+		const authorController = new AuthorController();
+		const response = await authorController.createPost({ title, content, authorId: id });
 
 		return res.status(response.status).json(response);
 	},
@@ -128,8 +128,8 @@ AuthorRouter.post(
 AuthorRouter.get('/me', authenticateUser, async (req: any, res: Response) => {
 	const token = req.headers.authorization?.split(' ')[1];
 
-	const userController = new AuthorController();
-	const response = await userController.me(token);
+	const authorController = new AuthorController();
+	const response = await authorController.me(token);
 
 	return res.status(response.status).json(response);
 });
@@ -182,8 +182,8 @@ AuthorRouter.patch('/users/:id/posts/:postId', authenticateUser, authorizeUser, 
 	const { body } = req;
 	const { id, postId } = req.params;
 
-	const userController = new AuthorController();
-	const response = await userController.updatePost({ authorId: id, postId, postParam: body });
+	const authorController = new AuthorController();
+	const response = await authorController.updatePost({ authorId: id, postId, postParam: body });
 
 	return res.status(response.status).json(response);
 });
