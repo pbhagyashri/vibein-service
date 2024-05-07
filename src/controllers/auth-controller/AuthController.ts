@@ -58,7 +58,7 @@ export class AuthController {
 				username: username,
 			},
 			process.env.ACCESS_TOKEN_SECRET as string,
-			{ expiresIn: '15m' },
+			{ expiresIn: 15000 },
 		);
 		const refreshToken = jwt.sign(
 			{
@@ -105,11 +105,13 @@ export class AuthController {
 		}
 
 		// find user by email
-		const user: User = await User.findOneByOrFail({
-			email,
+		const user = await User.findOne({
+			where: {
+				email,
+			},
 		});
 
-		if (!user?.email) {
+		if (!user) {
 			throw new Error('Invalid email, please enter a valid email');
 		}
 
@@ -127,13 +129,12 @@ export class AuthController {
 			process.env.ACCESS_TOKEN_SECRET as string,
 			{ expiresIn: '10m' },
 		);
-
 		const refreshToken = jwt.sign(
 			{
 				userId: user.id,
 			},
 			process.env.REFRESH_TOKEN_SECRET as string,
-			{ expiresIn: '15m' },
+			{ expiresIn: '5m' },
 		);
 
 		// update refreshToken in db
@@ -192,7 +193,7 @@ export class AuthController {
 	async refreshToken(req: Request, res: Response) {
 		// refresh token endpoint is used to generate a new access token when the old one expires
 		// we should receive a refreshToken in the cookie
-
+		console.log('req.headers', req.headers);
 		const refreshToken = req.headers.cookie?.split('=')[1];
 		if (!refreshToken) {
 			throw new Error('No refreshToken found');

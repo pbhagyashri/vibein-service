@@ -1,10 +1,4 @@
-import {
-	CreatePostRequestParams,
-	ResponseType,
-	UpdatePostRequestBody,
-	UserType,
-	getUserPostByIdRequestParams,
-} from '@/types';
+import { CreatePostRequestParams, ResponseType, UpdatePostRequestBody, UserType } from '@/types';
 import { PostType } from '@/types';
 import { Post, User } from '../../entities';
 import jwt from 'jsonwebtoken';
@@ -27,48 +21,18 @@ import { AppDataSource } from '../..';
  *           type: number
  *           default: 200
  */
-export class AuthorController {
-	private userRepository = AppDataSource.getRepository(User);
-	private postRepository = AppDataSource.getRepository(Post);
-
-	private userQueryBuilder = this.userRepository.createQueryBuilder('user');
-	private postQueryBuilder = this.postRepository.createQueryBuilder('post');
-
-	async geAuthorPosts(authorId: string): Promise<ResponseType<PostType[]>> {
-		if (!authorId) {
+export class UserController {
+	async getUserPosts(id: string): Promise<ResponseType<PostType[]>> {
+		if (!id) {
 			throw new Error('Must be logged in to view posts');
 		}
 
 		try {
-			const posts = await this.postQueryBuilder.where('post.authorId = :authorId', { authorId }).getMany();
+			const posts = await Post.find({ where: { authorId: id } });
 
 			return {
 				record: posts,
 				status: 200,
-			};
-		} catch (error) {
-			return {
-				error: error.message,
-				status: 400,
-			};
-		}
-	}
-
-	async getUserPostById({ authorId, postId }: getUserPostByIdRequestParams) {
-		if (!authorId || !postId) {
-			throw new Error('Invalid input');
-		}
-
-		try {
-			const post = await this.postQueryBuilder
-				.where('post.id = :postId', { postId })
-				.andWhere('post.authorId = :authorId', { authorId })
-				.getOne();
-
-			return {
-				record: post,
-				status: 200,
-				error: null,
 			};
 		} catch (error) {
 			return {
@@ -104,7 +68,7 @@ export class AuthorController {
 
 	async getUsers(): Promise<ResponseType<UserType[]>> {
 		try {
-			const users = await this.userQueryBuilder.getMany();
+			const users = await User.find();
 
 			return {
 				record: users,
@@ -124,15 +88,10 @@ export class AuthorController {
 				throw new Error('Invalid input');
 			}
 
-			const post = await this.postQueryBuilder
-				.insert()
-				.into(Post)
-				.values({ title, content, authorId })
-				.returning(['id', 'title', 'content', 'authorId', 'createdAt', 'updatedAt'])
-				.execute();
+			const post = await Post.create({ title, content, authorId }).save();
 
 			return {
-				record: post.raw[0],
+				record: post,
 				status: 200,
 			};
 		} catch (error) {
@@ -144,8 +103,11 @@ export class AuthorController {
 	}
 
 	async updatePost({ authorId, postId, postParam }: UpdatePostRequestBody): Promise<ResponseType<PostType>> {
+		const postRespository = AppDataSource.getRepository(Post);
+
 		try {
-			const updatedPost = await this.postQueryBuilder
+			const updatedPost = await postRespository
+				.createQueryBuilder()
 				.update(Post)
 				.set({
 					...postParam,
@@ -168,27 +130,6 @@ export class AuthorController {
 				error: error.message,
 				status: 400,
 			};
-		}
-	}
-
-	async deletePost(authorId: string, postId: string) {
-		try {
-			const result = await this.postQueryBuilder
-				.delete()
-				.from(Post)
-				.where('id = :id', { id: postId })
-				.andWhere('authorId = :authorId', { authorId })
-				.execute();
-
-			if (!result || result.affected === 0) {
-				throw new Error('Could not delete post!!!!');
-			}
-			return {
-				record: result,
-				status: 200,
-			};
-		} catch (error) {
-			throw new Error(error.message);
 		}
 	}
 }
