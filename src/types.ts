@@ -64,8 +64,8 @@ export type PaginationReqestParams = {
 	authorId?: string;
 };
 
-export type PaginationResponse = {
-	posts: PostType[];
+export type PaginationResponse<T> = {
+	records: T[];
 	hasNextPage: boolean;
 	hasPreviousPage: boolean;
 };

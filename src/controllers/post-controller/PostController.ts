@@ -1,7 +1,33 @@
+import { Cursor, PostType } from '@/types';
 import { AppDataSource } from '../..';
-import { Like, Post } from '../../entities';
+import { Post } from '../../entities';
+import { PaginationService } from '../../services/PaginationService';
+import { MainEntity } from '../../services/types';
 
 export class PostController {
+	async getPosts(limit: number, cursor: Cursor) {
+		try {
+			const paginationService = new PaginationService<PostType>({
+				cursor,
+				limit,
+				mainEntity: MainEntity.Post,
+				relation: 'author',
+			});
+			const response = await paginationService.getPaginatedRecords({ cursor });
+
+			return {
+				record: response.records,
+				hasPreviousPage: response.hasNextPage,
+				hasPreviousPosts: response.hasPreviousPage,
+				status: 200,
+			};
+		} catch (error) {
+			return {
+				error: error.message,
+				status: 400,
+			};
+		}
+	}
 	/**
 	 * @swagger
 	 * components:
