@@ -3,7 +3,7 @@ import { authenticateUser } from '../middlewares/authenticateUser';
 import { AuthorController } from '../controllers/author-controller';
 import { Router } from 'express';
 import { authorizeUser } from '../middlewares/authorizeUser';
-import { TypedRequestBody } from '@/types';
+import { Cursor, TypedRequestBody } from '@/types';
 
 const AuthorRouter = Router();
 
@@ -35,10 +35,14 @@ const AuthorRouter = Router();
  */
 AuthorRouter.get('/authors/:authorId/posts', authenticateUser, authorizeUser, async (req: any, res: Response) => {
 	const { authorId } = req.params;
+	const { limit, cursor } = req.query;
+	const limitNumber = parseInt(limit?.toString() || '9');
+	const cursorObject: Cursor = cursor ? JSON.parse(cursor.toString()) : undefined;
 
 	const authorController = new AuthorController();
 
-	const response = await authorController.getUserPosts(authorId);
+	const response = await authorController.getUserPosts(authorId, limitNumber, cursorObject);
+
 	return res.status(response.status).json(response);
 });
 

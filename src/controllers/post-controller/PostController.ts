@@ -1,17 +1,26 @@
-import { Cursor } from '@/types';
+import { Cursor, PostType } from '@/types';
 import { AppDataSource } from '../..';
 import { Post } from '../../entities';
-import { PaginationController } from '../paination-controller';
+import { PaginationService } from '../../services/PaginationService';
+import { MainEntity } from '../../services/types';
 
 export class PostController {
 	async getPosts(limit: number, cursor: Cursor) {
 		try {
-			const postRespository = AppDataSource?.getRepository(Post);
-			const fetchedPostQuery = postRespository.createQueryBuilder('post').leftJoinAndSelect('post.author', 'author');
+			const paginationService = new PaginationService<PostType>({
+				cursor,
+				limit,
+				mainEntity: MainEntity.Post,
+				relation: 'author',
+			});
+			const response = await paginationService.getPaginatedRecords({ cursor });
 
-			const paginationController = new PaginationController(cursor, limit, fetchedPostQuery);
-
-			return await paginationController.getPosts({ cursor, limit });
+			return {
+				record: response.records,
+				hasPreviousPage: response.hasNextPage,
+				hasPreviousPosts: response.hasPreviousPage,
+				status: 200,
+			};
 		} catch (error) {
 			return {
 				error: error.message,
